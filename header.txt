@@ -1,0 +1,8 @@
+Assignment: A local health clinic sent fliers to its clients to encourage everyone, but especially older persons at high risk 
+of complications, to get a flu shot in time for protection against an expected flu epidemic. In a pilot follow-up study, 159 
+clients were randomly selected and asked whether they actually received a flu shot. A client who received a flu shot was coded 
+Y=1 and a client who did not receive a flu shot was coded Y = 0. In addition, data were collected on their age (age) and their 
+health awareness. The latter data were combined into a awareness index (HA), for which higher values indicate greater awareness.
+Also included in the data was client gender, where males were coded gender = 1 and females were coded gender = 0.
+
+Question: Explore the relationship between the response variable Y and the three given covariates
