@@ -280,6 +280,88 @@ plot(model_full, which = 5)  # Residuals vs Leverage
 ## There are some issues with the deviance in the model and the multicollinearity between the predictors requires some kind of fix.
 ## I suggest fitting new models with these discoveries in mind and then retesting the goodness of fit and model assumptions.
 ## Perhaps it's also worth exploring the gender effect, but in my opinion I did not think this was significant.
+# Task 2: Fit of the model with different link functions
 
+# Fit a logistic regression model using the default logit link
+model_logit <- glm(Y ~ HA + Age + Gender, data = data, family = binomial(link = "logit"))
+summary(model_logit)
+
+# Fit a model using the probit link.
+# The probit link assumes a normal distribution for the underlying latent variable.
+model_probit <- glm(Y ~ HA + Age + Gender, data = data, family = binomial(link = "probit"))
+summary(model_probit)
+
+# Fit a model using the complementary log–log (cloglog) link.
+# This link is useful if the event probabilities are very small or very large.
+model_cloglog <- glm(Y ~ HA + Age + Gender, data = data, family = binomial(link = "cloglog"))
+summary(model_cloglog)
+
+# Compare the models using AIC (lower AIC indicates a better trade-off between fit and complexity)
+AIC_values <- AIC(model_logit, model_probit, model_cloglog)
+print(AIC_values)
+
+# The slightly lower AIC for the cloglog model suggests a marginally better fit, 
+# but the differences are very small. This indicates that the choice of link function 
+# does not dramatically alter the overall fit in this case.
+
+# The flu shot uptake ("Yes") is relatively low.
+# This might be an argument in favour of cloglog in our case as it might better
+# accommodate the asymmetry in the distribution.
+
+# However, since differences in fit are negligible and we do not have a strong
+# theoretical argument for the use of cloglog, it might be wise to choose
+# logit for interpretability.
+
+
+# Task 3: Goodness of fit
+
+# Define the Hosmer-Lemeshow test function
+hosmerlem <- function(y, yhat, g = 10) {
+  fcutyhat <- cut(yhat, breaks = quantile(yhat, probs = seq(0, 1, 1/g)), include.lowest = TRUE)
+  obs <- xtabs(cbind(1 - y, y) ~ fcutyhat)
+  expect <- xtabs(cbind(1 - yhat, yhat) ~ fcutyhat)
+  chisq <- sum((obs - expect)^2 / expect)
+  P <- 1 - pchisq(chisq, g - 2)
+  return(list(chisq = chisq, p.value = P))
+}
+
+# Convert the factor response to a numeric variable (0 for "No", 1 for "Yes")
+y_numeric <- ifelse(data$Y == "Yes", 1, 0)
+
+# Final logit model (using the logit link)
+model_logit <- glm(Y ~ HA + Age + Gender, data = data, family = binomial(link = "logit"))
+summary(model_logit)
+
+# Checking the Interaction effects
+#result: Only HA is significant (p = 0.029)
+interaction_model <- glm(Y ~ Age * Gender + HA * Gender, data = data, family = "binomial")
+summary(interaction_model)
+
+# Checking for Non-linear terms
+#Result: None of the quadratic terlms are significant (I(age^2), p=0.710 and I(HA^2), p=0.244)
+nonlinear_model <- glm(Y ~ Age + I(Age^2) + HA + I(HA^2) + Gender, data = data, family = "binomial")
+summary(nonlinear_model)
+
+# Compare models using AIC
+#Conclusion: The simple Logit model has the best AIC 
+AIC(model_logit, interaction_model, nonlinear_model)
+
+# ROC Curve and AUC
+#conclusion: AUC = 0.8224, which indicates good classification performance.
+#The ROC-curve shows a decent balance of sensitivity and specificity.
+library(pROC)
+roc_obj <- roc(y_numeric, fitted(model_logit))
+plot(roc_obj, col = "#2C7BB6", main = "ROC Curve for Logit Model")
+auc(roc_obj)
+
+# Perform the Hosmer-Lemeshow test on the final model
+#conclusion: The null hypothesis of the Hosmer-Lemeshow test is that the model fits the data well.
+#Your result (p = 0.458) indicates no significant lack of fit. The model fits the data well.
+hl_test <- hosmerlem(y = y_numeric, yhat = fitted(model_logit), g = 10)
+
+# Display the test statistic and p-value in a data frame
+#Result: chisq = 7.75 is well within the acceptable range for a good-fitting model with 8 degrees of freedom.
+hl_test_df <- data.frame(Chisq = hl_test$chisq, pvalue = hl_test$p.value)
+print(hl_test_df)
 
 
