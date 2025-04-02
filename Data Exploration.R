@@ -364,4 +364,65 @@ hl_test <- hosmerlem(y = y_numeric, yhat = fitted(model_logit), g = 10)
 hl_test_df <- data.frame(Chisq = hl_test$chisq, pvalue = hl_test$p.value)
 print(hl_test_df)
 
+#Task 4#
+#Interpretation of Coefficients
+
+# Fit the final logistic regression model
+model_logit <- glm(Y ~ HA + Age + Gender, data = data, family = binomial(link = "logit"))
+
+# Output model summary
+summary(model_logit)
+
+## Model Summary and Interpretation##
+
+# Coefficients and their meaning:
+# (Intercept): -1.177 (p = 0.693) Not statistically significant.
+# HA: -0.099 (p = 0.003)   Significant, negative effect on flu shot uptake.
+# Age: +0.073 (p = 0.017)  Significant, positive effect on flu shot uptake.
+# Gender (Male): +0.434 (p = 0.406)  Not statistically significant
+
+# Interpretation of each coefficient:
+
+# 1. Health Awareness (HA):
+# A one-unit increase in HA leads to a decrease in the log-odds of getting a flu shot by 0.099.
+# The odds ratio is exp(-0.099) ≈ 0.91 , about 9% decrease in odds of vaccination.
+# but, since HA is negatively correlated with Age (r = -0.47),
+# and younger individuals are less likely to get vaccinated, this effect may be confounded.
+# So the HA effect should be interpreted cautiously.
+
+# 2. Age:
+# Each additional year of age increases the log-odds of vaccination by 0.073.
+# Odds ratio is exp(0.073) ≈ 1.076 → about 7.6% increase in odds per year.
+# This result aligns with EDA and common expectations.
+
+# 3. Gender (Male):
+# The coefficient is not statistically significant (p = 0.406),
+# suggesting gender does not have a meaningful effect on flu shot behavior after adjusting for Age and HA.
+
+##Model Fit Summary##
+
+# Chosen model: logit link logistic regression
+# AIC = 113.09 → better than models with interaction/quadratic terms
+
+# Goodness of fit:
+# - Hosmer–Lemeshow test: p = 0.458  No significant, lack of fit
+# - AUC = 0.822 → Good classification performance
+# - Residuals and influence measures show no concerning outliers
+
+## Final Notes ##
+
+# - Age is the most important predictor.
+# - HA is statistically significant, but may be confounded by Age.
+# - Gender is not a significant predictor.
+# - The model is stable and fits the data well.
+
+# --Limitations and Extensions --
+
+# While HA and Age are both statistically significant, their moderate negative correlation (r = -0.47)
+# suggests potential multicollinearity. Including both in the model may dilute each other's effect.
+# Additionally, the proportion of vaccinated individuals is low in the dataset.
+# Finally, although Gender is not significant here, future models could explore gender-specific behaviors
+# using interaction terms in larger or more balanced samples.
+
+
 
